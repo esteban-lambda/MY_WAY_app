@@ -1,0 +1,38 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<div class="p-8 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">Pipeline de Ventas</h1>
+    
+    <div class="flex gap-4 overflow-x-auto">
+        {% for stage_key, stage_name in stages %}
+        <div class="bg-gray-200 p-4 rounded-lg min-w-[300px] w-1/4">
+            <h2 class="font-bold text-gray-600 uppercase text-sm mb-4">{{ stage_name }}</h2>
+            
+            <div class="space-y-3">
+                {% for deal in deals %}
+                    {% if deal.stage == stage_key %}
+                    <div class="bg-white p-4 rounded shadow-sm border-l-4 border-indigo-500 hover:shadow-md transition-shadow">
+                        <p class="font-bold text-gray-800">{{ deal.name }}</p>
+                        <p class="text-sm text-gray-500">{{ deal.account.name }}</p>
+                        <p class="text-indigo-600 font-semibold mt-2">${{ deal.value }}</p>
+                        
+                        <select class="mt-3 text-xs border rounded p-1 w-full"
+                                name="stage"
+                                hx-post="{% url 'update_deal_stage' deal.id %}"
+                                hx-target="this"
+                                hx-swap="none">
+                            {% for opt_key, opt_name in stages %}
+                                <option value="{{ opt_key }}" {% if opt_key == deal.stage %}selected{% endif %}>
+                                    Mover a {{ opt_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

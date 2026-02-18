@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+
+<div class="p-8 min-h-screen">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Dashboard Comercial</h1>
+        <p class="text-gray-600">Sistema de Forecasting con Probabilidades Ponderadas</p>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500 hover:shadow-lg transition">
+            <p class="text-gray-500 text-sm font-semibold uppercase tracking-wide">Ingresos Cerrados</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">${{ total_revenue|floatformat:0 }}</p>
+            <p class="text-xs text-gray-400 mt-1">Deals ganados</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500 hover:shadow-lg transition">
+            <p class="text-gray-500 text-sm font-semibold uppercase tracking-wide">Win Rate</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ win_rate }}%</p>
+            <p class="text-xs text-gray-400 mt-1">Tasa de éxito</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-purple-500 hover:shadow-lg transition">
+            <p class="text-gray-500 text-sm font-semibold uppercase tracking-wide">Oportunidades Activas</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ active_deals_count }}</p>
+            <p class="text-xs text-gray-400 mt-1">En pipeline</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500 hover:shadow-lg transition">
+            <p class="text-gray-500 text-sm font-semibold uppercase tracking-wide">Total Oportunidades</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ total_deals }}</p>
+            <p class="text-xs text-gray-400 mt-1">Histórico completo</p>
+        </div>
+    </div>
+
+    <!-- Forecasting Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <!-- Panel de Forecasting -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="text-3xl mr-3"></span> Forecasting de Ventas
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-5">
+                    <p class="text-blue-200 text-sm uppercase tracking-wide mb-1">Pipeline Total (Nominal)</p>
+                    <p class="text-4xl font-bold">${{ total_nominal|floatformat:0 }}</p>
+                </div>
+                
+                <div class="bg-white/20 backdrop-blur-sm rounded-lg p-5 border-2 border-yellow-300">
+                    <p class="text-yellow-100 text-sm uppercase tracking-wide mb-1">Pipeline Ponderado (Forecast)</p>
+                    <p class="text-4xl font-bold text-yellow-300">${{ total_weighted|floatformat:0 }}</p>
+                    <p class="text-xs text-blue-200 mt-2">Basado en probabilidades por etapa</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-200 text-sm">Confianza de Forecast</span>
+                        <span class="text-xl font-bold">{{ forecast_confidence|floatformat:1 }}%</span>
+                    </div>
+                    <div class="w-full bg-blue-900 rounded-full h-2 mt-2">
+                        <div class="bg-yellow-300 h-2 rounded-full" style="width: {{ forecast_confidence }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Etapas -->
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Pipeline por Etapa</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-2 text-sm font-semibold text-gray-600">Etapa</th>
+                            <th class="text-center py-3 px-2 text-sm font-semibold text-gray-600">Deals</th>
+                            <th class="text-right py-3 px-2 text-sm font-semibold text-gray-600">Nominal</th>
+                            <th class="text-right py-3 px-2 text-sm font-semibold text-gray-600">Ponderado</th>
+                            <th class="text-center py-3 px-2 text-sm font-semibold text-gray-600">Prob.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in stage_stats %}
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                            <td class="py-4 px-2">
+                                <span class="font-medium text-gray-800">{{ stat.label }}</span>
+                            </td>
+                            <td class="text-center py-4 px-2">
+                                <span class="bg-gray-200 px-3 py-1 rounded-full text-sm font-semibold">{{ stat.count }}</span>
+                            </td>
+                            <td class="text-right py-4 px-2 text-gray-700 font-medium">
+                                ${{ stat.nominal_value|floatformat:0 }}
+                            </td>
+                            <td class="text-right py-4 px-2 text-blue-600 font-bold">
+                                ${{ stat.weighted_value|floatformat:0 }}
+                            </td>
+                            <td class="text-center py-4 px-2">
+                                <span class="text-sm font-semibold text-gray-600">{{ stat.probability|floatformat:0 }}%</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfica de Funnel -->
+    <div class="bg-white p-8 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Funnel de Conversión: Valor Nominal vs Ponderado</h2>
+        <div class="max-w-5xl mx-auto">
+            <canvas id="funnelChart" height="100"></canvas>
+        </div>
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <p class="text-sm text-gray-700">
+                <strong>Interpretación:</strong> El valor ponderado considera la probabilidad de cierre según la etapa. 
+                La diferencia entre ambos valores muestra el riesgo del pipeline.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gráfica de Funnel con comparación Nominal vs Ponderado
+    const ctx = document.getElementById('funnelChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ funnel_labels|safe }},
+            datasets: [
+                {
+                    label: 'Valor Nominal',
+                    data: {{ funnel_nominal|safe }},
+                    backgroundColor: 'rgba(156, 163, 175, 0.6)',
+                    borderColor: 'rgb(156, 163, 175)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Valor Ponderado (Forecast)',
+                    data: {{ funnel_weighted|safe }},
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
