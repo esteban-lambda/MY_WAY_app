@@ -277,12 +277,18 @@ Editar `config/settings.py`:
 UNFOLD = {
     "COLORS": {
         "primary": {
-            "500": "#1A3263",  # Azul oscuro
+            "500": "#1e293b",  # Slate-800 (Sobrio y profesional)
         },
         # ... más colores
     }
 }
 ```
+
+**Paleta actual (Sobria y Profesional)**:
+- Primary: `#1e293b` (Slate-800) - Gris azulado oscuro
+- Secondary: `#64748b` (Slate-500) - Gris medio
+- Accent: `#0ea5e9` (Sky-500) - Azul cielo profesional
+- Light: `#f1f5f9` (Slate-50) - Gris muy claro
 
 ### Agregar Etapas de Pipeline
 1. Modificar `Deal.STAGES` en `deals/models.py`

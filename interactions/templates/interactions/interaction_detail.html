@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ interaction.subject }} - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Breadcrumb -->
+    <nav class="mb-4 text-sm">
+        <a href="{% url 'interactions_list' %}" class="text-secondary hover:underline">Interacciones</a>
+        <span class="text-gray-500 mx-2">/</span>
+        <span class="text-gray-700">{{ interaction.subject|truncatewords:5 }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                    {% if interaction.interaction_type == 'call' %}
+                    <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">LLAMADA</span>
+                    {% else %}
+                    <span class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">REUNIÓN</span>
+                    {% endif %}
+                    
+                    {% if interaction.status == 'completed' %}
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm">Completado</span>
+                    {% elif interaction.status == 'scheduled' %}
+                    <span class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm">Programado</span>
+                    {% else %}
+                    <span class="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm">Cancelado</span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="text-3xl font-bold text-gray-900">{{ interaction.subject }}</h1>
+            </div>
+            
+            <a href="/admin/interactions/interaction/{{ interaction.id }}/change/" class="bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                Editar
+            </a>
+        </div>
+
+        <div class="border-t pt-4">
+            <p class="text-gray-700 text-lg">{{ interaction.description }}</p>
+        </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Left Column -->
+        <div class="space-y-6">
+            <!-- Información General -->
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Información General</h2>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm text-gray-500">Fecha y Hora</dt>
+                        <dd class="text-base font-medium text-gray-900">
+                            {{ interaction.scheduled_at|date:"d/m/Y H:i" }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Duración</dt>
+                        <dd class="text-base font-medium text-gray-900">{{ interaction.duration_minutes }} minutos</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Creado por</dt>
+                        <dd class="text-base font-medium text-gray-900">{{ interaction.created_by.get_full_name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Asignado a</dt>
+                        <dd class="text-base font-medium text-gray-900">{{ interaction.assigned_to.get_full_name }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Cuenta y Contacto -->
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Cuenta y Contacto</h2>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm text-gray-500">Empresa</dt>
+                        <dd class="text-base font-medium text-primary">
+                            <a href="{% url 'account_detail' interaction.account.id %}" class="hover:underline">
+                                {{ interaction.account.name }}
+                            </a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Contacto</dt>
+                        <dd class="text-base font-medium text-primary">
+                            <a href="{% url 'contact_detail' interaction.contact.id %}" class="hover:underline">
+                                {{ interaction.contact.first_name }} {{ interaction.contact.last_name }}
+                            </a>
+                        </dd>
+                        <dd class="text-sm text-gray-600 mt-1">{{ interaction.contact.job_title }}</dd>
+                        <dd class="text-sm text-gray-600">{{ interaction.contact.email }}</dd>
+                        <dd class="text-sm text-gray-600">{{ interaction.contact.phone }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- Notas -->
+            {% if interaction.notes %}
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Notas</h2>
+                <p class="text-gray-700 whitespace-pre-line">{{ interaction.notes }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Detalles de Llamada -->
+            {% if interaction.interaction_type == 'call' %}
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-blue-900 mb-4">Detalles de Llamada</h2>
+                {% if interaction.call %}
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-sm text-blue-700">Teléfono</dt>
+                        <dd class="text-base font-medium text-blue-900">{{ interaction.call.phone_number }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-blue-700">Dirección</dt>
+                        <dd class="text-base font-medium text-blue-900">
+                            {% if interaction.call.direction == 'inbound' %}Entrante{% else %}Saliente{% endif %}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-blue-700">Resultado</dt>
+                        <dd class="text-base font-medium text-blue-900">
+                            {% if interaction.call.call_outcome == 'connected' %}Conectado
+                            {% elif interaction.call.call_outcome == 'no_answer' %}Sin respuesta
+                            {% else %}Buzón de voz{% endif %}
+                        </dd>
+                    </div>
+                </dl>
+                {% else %}
+                <p class="text-sm text-blue-700">No hay detalles adicionales de llamada</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Detalles de Reunión -->
+            {% if interaction.interaction_type == 'meeting' %}
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-purple-900 mb-4">Detalles de Reunión</h2>
+                {% if interaction.meeting %}
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-sm text-purple-700">Tipo</dt>
+                        <dd class="text-base font-medium text-purple-900">
+                            {% if interaction.meeting.meeting_type == 'in_person' %}Presencial
+                            {% elif interaction.meeting.meeting_type == 'video' %}Videoconferencia
+                            {% else %}Telefónica{% endif %}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-purple-700">Ubicación/Link</dt>
+                        <dd class="text-base font-medium text-purple-900 break-all">{{ interaction.meeting.location }}</dd>
+                    </div>
+                    {% if interaction.meeting.attendees.count %}
+                    <div>
+                        <dt class="text-sm text-purple-700 mb-2">Asistentes ({{ interaction.meeting.attendees.count }})</dt>
+                        <dd class="space-y-1">
+                            {% for attendee in interaction.meeting.attendees.all %}
+                            <div class="text-sm text-purple-900">
+                                {{ attendee.first_name }} {{ attendee.last_name }} - {{ attendee.job_title }}
+                            </div>
+                            {% endfor %}
+                        </dd>
+                    </div>
+                    {% endif %}
+                </dl>
+                {% else %}
+                <p class="text-sm text-purple-700">No hay detalles adicionales de reunión</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Metadata -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Información del Sistema</h2>
+                <dl class="space-y-2 text-sm">
+                    <div>
+                        <dt class="text-gray-500">ID</dt>
+                        <dd class="text-gray-900 font-mono">{{ interaction.id }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Creado el</dt>
+                        <dd class="text-gray-900">{{ interaction.created_at|date:"d/m/Y H:i:s" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Última actualización</dt>
+                        <dd class="text-gray-900">{{ interaction.updated_at|date:"d/m/Y H:i:s" }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

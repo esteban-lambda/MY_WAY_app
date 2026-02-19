@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Empresas - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Empresas</h1>
+            <p class="mt-1 text-sm text-gray-600">Gestiona tu cartera de clientes</p>
+        </div>
+        <a href="/admin/accounts/account/add/" class="bg-primary hover:bg-blue-900 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+            + Nueva Empresa
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-6">
+        <form method="get" class="flex gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="Buscar empresas..." 
+                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary px-4 py-2 border">
+            <button type="submit" class="bg-secondary hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition">
+                Buscar
+            </button>
+            {% if query %}
+            <a href="{% url 'accounts_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md font-medium transition">
+                Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Accounts Grid -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for account in accounts %}
+        <div class="bg-white overflow-hidden shadow-md rounded-lg hover:shadow-lg transition">
+            <div class="p-5">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <a href="{% url 'account_detail' account.id %}" class="hover:text-primary">
+                            {{ account.name }}
+                        </a>
+                    </h3>
+                    {% if account.type == 'customer' %}
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Cliente</span>
+                    {% elif account.type == 'prospect' %}
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Prospecto</span>
+                    {% elif account.type == 'partner' %}
+                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Partner</span>
+                    {% endif %}
+                </div>
+                
+                <div class="text-sm text-gray-600 space-y-1 mb-4">
+                    {% if account.industry %}
+                    <p><span class="font-medium">Industria:</span> {{ account.industry }}</p>
+                    {% endif %}
+                    {% if account.website %}
+                    <p class="truncate"><span class="font-medium">Web:</span> 
+                        <a href="{{ account.website }}" target="_blank" class="text-secondary hover:underline">
+                            {{ account.website }}
+                        </a>
+                    </p>
+                    {% endif %}
+                    {% if account.assigned_to %}
+                    <p><span class="font-medium">Asignado a:</span> {{ account.assigned_to.get_full_name }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-between text-sm text-gray-500 border-t pt-3">
+                    <span>{{ account.contacts_count }} contacto{{ account.contacts_count|pluralize }}</span>
+                    <span>{{ account.deals_count }} deal{{ account.deals_count|pluralize }}</span>
+                    {% if account.deals_value %}
+                    <span class="font-semibold text-green-600">${{ account.deals_value|floatformat:0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500 text-lg">No se encontraron empresas</p>
+            {% if query %}
+            <p class="text-gray-400 mt-2">Intenta con otro término de búsqueda</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if accounts %}
+    <div class="mt-6 text-center text-sm text-gray-600">
+        Total: {{ accounts.count }} empresa{{ accounts.count|pluralize }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

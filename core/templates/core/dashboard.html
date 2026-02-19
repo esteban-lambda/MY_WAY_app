@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard CRM</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-gray-50">
+{% extends 'base.html' %}
 
-<div class="p-8 min-h-screen">
+{% block title %}Dashboard - MyWay CRM{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Dashboard Comercial</h1>
@@ -44,9 +42,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         <!-- Panel de Forecasting -->
         <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-8 rounded-xl shadow-lg">
-            <h2 class="text-2xl font-bold mb-6 flex items-center">
-                <span class="text-3xl mr-3"></span> Forecasting de Ventas
-            </h2>
+            <h2 class="text-2xl font-bold mb-6">Forecasting de Ventas</h2>
             
             <div class="space-y-4">
                 <div class="bg-white/10 backdrop-blur-sm rounded-lg p-5">
@@ -126,7 +122,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
     // Gráfica de Funnel con comparación Nominal vs Ponderado
     const ctx = document.getElementById('funnelChart').getContext('2d');
@@ -187,6 +185,4 @@
         }
     });
 </script>
-
-</body>
-</html>
+{% endblock %}

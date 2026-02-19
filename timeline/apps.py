@@ -1,0 +1,11 @@
+from django.apps import AppConfig
+
+
+class TimelineConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'timeline'
+    verbose_name = 'Timeline'
+    
+    def ready(self):
+        """Importar signals cuando la app esté lista"""
+        import timeline.signals

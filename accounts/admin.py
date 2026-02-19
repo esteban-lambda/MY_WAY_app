@@ -30,7 +30,7 @@ class AccountAdmin(RBACModelAdminMixin, RestrictExportMixin, ModelAdmin):
         count = obj.interactions.count()
         if count > 0:
             return format_html(
-                '<span style="background-color: #547792; color: white; padding: 3px 8px; '
+                '<span style="background-color: #64748b; color: white; padding: 3px 8px; '
                 'border-radius: 10px; font-size: 12px; font-weight: 600;">{}</span>',
                 count
             )

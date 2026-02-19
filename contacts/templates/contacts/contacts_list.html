@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Contactos - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Contactos</h1>
+            <p class="mt-1 text-sm text-gray-600">Gestiona tu red de contactos comerciales</p>
+        </div>
+        <a href="/admin/contacts/contact/add/" class="bg-primary hover:bg-blue-900 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+            + Nuevo Contacto
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-6">
+        <form method="get" class="flex gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="Buscar por nombre, email, empresa..." 
+                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary px-4 py-2 border">
+            <button type="submit" class="bg-secondary hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition">
+                Buscar
+            </button>
+            {% if query %}
+            <a href="{% url 'contacts_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md font-medium transition">
+                Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Contacts Table -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actividad</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for contact in contacts %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ contact.first_name }} {{ contact.last_name }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="{% url 'account_detail' contact.account.id %}" class="text-sm text-secondary hover:underline">
+                            {{ contact.account.name }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ contact.job_title|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">{{ contact.email|default:"-" }}</div>
+                        <div class="text-sm text-gray-500">{{ contact.phone|default:"-" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="flex gap-2">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                                {{ contact.deals_count }} deal{{ contact.deals_count|pluralize }}
+                            </span>
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                                {{ contact.interactions_count }} int.
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'contact_detail' contact.id %}" class="text-primary hover:text-blue-900">Ver</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        No se encontraron contactos
+                        {% if query %}
+                        <p class="text-gray-400 mt-2">Intenta con otro término de búsqueda</p>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if contacts %}
+    <div class="mt-6 text-center text-sm text-gray-600">
+        Total: {{ contacts.count }} contacto{{ contacts.count|pluralize }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ account.name }} - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Breadcrumb -->
+    <nav class="mb-4 text-sm">
+        <a href="{% url 'accounts_list' %}" class="text-secondary hover:underline">Empresas</a>
+        <span class="text-gray-500 mx-2">/</span>
+        <span class="text-gray-700">{{ account.name }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ account.name }}</h1>
+                <div class="flex gap-3 text-sm text-gray-600">
+                    {% if account.type == 'customer' %}
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">Cliente</span>
+                    {% elif account.type == 'prospect' %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">Prospecto</span>
+                    {% elif account.type == 'partner' %}
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">Partner</span>
+                    {% endif %}
+                    {% if account.industry %}
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">{{ account.industry }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="/admin/accounts/account/{{ account.id }}/change/" class="bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                Editar
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            {% if account.website %}
+            <div>
+                <span class="text-gray-500 text-sm">Sitio Web:</span>
+                <a href="{{ account.website }}" target="_blank" class="block text-secondary hover:underline">
+                    {{ account.website }}
+                </a>
+            </div>
+            {% endif %}
+            {% if account.phone %}
+            <div>
+                <span class="text-gray-500 text-sm">Teléfono:</span>
+                <p class="text-gray-900">{{ account.phone }}</p>
+            </div>
+            {% endif %}
+            {% if account.assigned_to %}
+            <div>
+                <span class="text-gray-500 text-sm">Asignado a:</span>
+                <p class="text-gray-900">{{ account.assigned_to.get_full_name }}</p>
+            </div>
+            {% endif %}
+            <div>
+                <span class="text-gray-500 text-sm">Creado:</span>
+                <p class="text-gray-900">{{ account.created_at|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Contactos</p>
+            <p class="text-2xl font-bold text-primary">{{ contacts.count }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Total Deals</p>
+            <p class="text-2xl font-bold text-secondary">{{ total_deals }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Deals Ganados</p>
+            <p class="text-2xl font-bold text-green-600">{{ won_deals }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Valor Ganado</p>
+            <p class="text-2xl font-bold text-green-600">${{ won_value|floatformat:0 }}</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+                <button onclick="showTab('contacts')" id="tab-contacts" class="tab-button border-b-2 border-primary text-primary py-4 px-6 font-medium">
+                    Contactos ({{ contacts.count }})
+                </button>
+                <button onclick="showTab('deals')" id="tab-deals" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-4 px-6 font-medium">
+                    Deals ({{ total_deals }})
+                </button>
+            </nav>
+        </div>
+
+        <!-- Contacts Tab -->
+        <div id="content-contacts" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Contactos</h3>
+                <a href="/admin/contacts/contact/add/?account={{ account.id }}" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-900 transition">
+                    + Nuevo Contacto
+                </a>
+            </div>
+            {% if contacts %}
+            <div class="space-y-3">
+                {% for contact in contacts %}
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">
+                                <a href="{% url 'contact_detail' contact.id %}" class="hover:text-primary">
+                                    {{ contact.first_name }} {{ contact.last_name }}
+                                </a>
+                            </h4>
+                            <p class="text-sm text-gray-600">{{ contact.job_title }}</p>
+                            <div class="mt-2 text-sm text-gray-500 space-y-1">
+                                {% if contact.email %}
+                                <p>Email: <a href="mailto:{{ contact.email }}" class="text-secondary hover:underline">{{ contact.email }}</a></p>
+                                {% endif %}
+                                {% if contact.phone %}
+                                <p>Tel: {{ contact.phone }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No hay contactos registrados</p>
+            {% endif %}
+        </div>
+
+        <!-- Deals Tab -->
+        <div id="content-deals" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Oportunidades</h3>
+                <a href="/admin/deals/deal/add/?account={{ account.id }}" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-900 transition">
+                    + Nuevo Deal
+                </a>
+            </div>
+            {% if deals %}
+            <div class="space-y-3">
+                {% for deal in deals %}
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900">{{ deal.name }}</h4>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Contacto: {{ deal.contact.first_name }} {{ deal.contact.last_name }}
+                            </p>
+                            <div class="mt-2 flex gap-3 text-sm">
+                                {% if deal.stage == 'prospecting' %}
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Prospección</span>
+                                {% elif deal.stage == 'negotiation' %}
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Negociación</span>
+                                {% elif deal.stage == 'closed_won' %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Ganado</span>
+                                {% elif deal.stage == 'closed_lost' %}
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded">Perdido</span>
+                                {% endif %}
+                                <span class="text-gray-500">Cierre: {{ deal.expected_close_date|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-green-600">${{ deal.value|floatformat:0 }}</p>
+                            <p class="text-xs text-gray-500">{{ deal.assigned_to.get_full_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No hay deals registrados</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabName) {
+        // Ocultar todos los contenidos
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        // Resetear estilos de todos los botones
+        document.querySelectorAll('.tab-button').forEach(el => {
+            el.classList.remove('border-primary', 'text-primary');
+            el.classList.add('border-transparent', 'text-gray-500');
+        });
+        // Mostrar contenido seleccionado
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        // Activar botón seleccionado
+        const btn = document.getElementById('tab-' + tabName);
+        btn.classList.remove('border-transparent', 'text-gray-500');
+        btn.classList.add('border-primary', 'text-primary');
+    }
+</script>
+{% endblock %}

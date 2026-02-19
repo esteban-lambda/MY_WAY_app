@@ -43,6 +43,12 @@ INSTALLED_APPS = [
     'contacts',
     'deals',
     'core',
+    'tasks',
+    'email_templates',
+    'documents',
+    'notifications',
+    'timeline',
+    'reports',
 ]
 
 # Config Crispy Forms
@@ -133,6 +139,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Media files (Uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -149,43 +159,43 @@ UNFOLD = {
     },
     "COLORS": {
         "primary": {
-            "50": "rgb(235, 240, 249)",
-            "100": "rgb(215, 225, 243)",
-            "200": "rgb(175, 195, 231)",
-            "300": "rgb(135, 165, 219)",
-            "400": "rgb(95, 135, 207)",
-            "500": "rgb(26, 50, 99)",       # #1A3263 - Color principal
-            "600": "rgb(21, 40, 79)",
-            "700": "rgb(16, 30, 59)",
-            "800": "rgb(11, 20, 40)",
-            "900": "rgb(6, 10, 20)",
-            "950": "rgb(3, 5, 10)",
+            "50": "rgb(248, 250, 252)",
+            "100": "rgb(241, 245, 249)",
+            "200": "rgb(226, 232, 240)",
+            "300": "rgb(203, 213, 225)",
+            "400": "rgb(148, 163, 184)",
+            "500": "rgb(100, 116, 139)",
+            "600": "rgb(71, 85, 105)",
+            "700": "rgb(51, 65, 85)",
+            "800": "rgb(30, 41, 59)",       # #1e293b - Color principal (slate-800)
+            "900": "rgb(15, 23, 42)",
+            "950": "rgb(2, 6, 23)",
         },
         "secondary": {
-            "50": "rgb(240, 245, 248)",
-            "100": "rgb(225, 235, 241)",
-            "200": "rgb(195, 215, 229)",
-            "300": "rgb(165, 195, 217)",
-            "400": "rgb(135, 175, 205)",
-            "500": "rgb(84, 119, 146)",     # #547792 - Color secundario
-            "600": "rgb(67, 95, 117)",
-            "700": "rgb(50, 71, 88)",
-            "800": "rgb(34, 48, 58)",
-            "900": "rgb(17, 24, 29)",
-            "950": "rgb(8, 12, 15)",
+            "50": "rgb(248, 250, 252)",
+            "100": "rgb(241, 245, 249)",
+            "200": "rgb(226, 232, 240)",
+            "300": "rgb(203, 213, 225)",
+            "400": "rgb(148, 163, 184)",
+            "500": "rgb(100, 116, 139)",    # #64748b - Color secundario (slate-500)
+            "600": "rgb(71, 85, 105)",
+            "700": "rgb(51, 65, 85)",
+            "800": "rgb(30, 41, 59)",
+            "900": "rgb(15, 23, 42)",
+            "950": "rgb(2, 6, 23)",
         },
         "accent": {
-            "50": "rgb(255, 251, 245)",
-            "100": "rgb(255, 247, 235)",
-            "200": "rgb(254, 238, 215)",
-            "300": "rgb(253, 230, 195)",
-            "400": "rgb(252, 221, 175)",
-            "500": "rgb(250, 185, 91)",     # #FAB95B - Color de acento
-            "600": "rgb(248, 170, 61)",
-            "700": "rgb(220, 145, 40)",
-            "800": "rgb(180, 115, 30)",
-            "900": "rgb(140, 85, 20)",
-            "950": "rgb(100, 55, 10)",
+            "50": "rgb(240, 249, 255)",
+            "100": "rgb(224, 242, 254)",
+            "200": "rgb(186, 230, 253)",
+            "300": "rgb(125, 211, 252)",
+            "400": "rgb(56, 189, 248)",
+            "500": "rgb(14, 165, 233)",     # #0ea5e9 - Color de acento (sky-500)
+            "600": "rgb(2, 132, 199)",
+            "700": "rgb(3, 105, 161)",
+            "800": "rgb(7, 89, 133)",
+            "900": "rgb(12, 74, 110)",
+            "950": "rgb(8, 47, 73)",
         },
     },
     "STYLES": [
@@ -251,6 +261,73 @@ UNFOLD = {
                         "icon": "event",
                         "link": lambda request: "/admin/interactions/meeting/",
                     },
+                    {
+                        "title": "Tareas",
+                        "icon": "task_alt",
+                        "link": lambda request: "/admin/tasks/task/",
+                    },
+                ],
+            },
+            {
+                "title": "Herramientas",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Timeline",
+                        "icon": "timeline",
+                        "link": lambda request: "/admin/timeline/timelineevent/",
+                    },
+                    {
+                        "title": "Documentos",
+                        "icon": "folder",
+                        "link": lambda request: "/admin/documents/document/",
+                    },
+                    {
+                        "title": "Plantillas de Email",
+                        "icon": "email",
+                        "link": lambda request: "/admin/email_templates/emailtemplate/",
+                    },
+                    {
+                        "title": "Logs de Emails",
+                        "icon": "mail_outline",
+                        "link": lambda request: "/admin/email_templates/emaillog/",
+                    },
+                    {
+                        "title": "Notificaciones",
+                        "icon": "notifications",
+                        "link": lambda request: "/admin/notifications/notification/",
+                    },
+                ],
+            },
+            {
+                "title": "Reportes",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Dashboard de Reportes",
+                        "icon": "dashboard",
+                        "link": lambda request: "/reports/",
+                    },
+                    {
+                        "title": "Reporte de Ventas",
+                        "icon": "trending_up",
+                        "link": lambda request: "/reports/sales/",
+                    },
+                    {
+                        "title": "Pipeline",
+                        "icon": "account_tree",
+                        "link": lambda request: "/reports/pipeline/",
+                    },
+                    {
+                        "title": "Actividad",
+                        "icon": "insights",
+                        "link": lambda request: "/reports/activity/",
+                    },
+                    {
+                        "title": "Cuentas",
+                        "icon": "business_center",
+                        "link": lambda request: "/reports/accounts/",
+                    },
                 ],
             },
             {
@@ -267,3 +344,67 @@ UNFOLD = {
         ],
     },
 }
+
+# Authentication settings
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Email Configuration (Desarrollo - Console Backend)
+# En producción, configurar con SMTP real
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@myway-crm.com'
+EMAIL_HOST_USER = 'noreply@myway-crm.com'
+
+# Para producción con SMTP (descomenta y configura):
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # o tu servidor SMTP
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'tu-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'tu-password-o-app-password'
+
+# Password Reset Token Lifetime (1 día)
+PASSWORD_RESET_TIMEOUT = 86400
+
+# Session Configuration
+SESSION_COOKIE_AGE = 86400  # 24 horas
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False  # True en producción con HTTPS
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# En producción con HTTPS, descomentar:
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
+

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Interacciones - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Interacciones</h1>
+            <p class="mt-1 text-sm text-gray-600">Historial de llamadas y reuniones</p>
+        </div>
+        <a href="/admin/interactions/interaction/add/" class="bg-primary hover:bg-blue-900 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+            + Nueva Interacción
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Total</p>
+            <p class="text-2xl font-bold text-primary">{{ total_count }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Llamadas</p>
+            <p class="text-2xl font-bold text-blue-600">{{ calls_count }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Reuniones</p>
+            <p class="text-2xl font-bold text-purple-600">{{ meetings_count }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Completadas</p>
+            <p class="text-2xl font-bold text-green-600">{{ completed_count }}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-md rounded-lg p-4 mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                <select name="type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+                    <option value="">Todos</option>
+                    <option value="call" {% if interaction_type == 'call' %}selected{% endif %}>Llamadas</option>
+                    <option value="meeting" {% if interaction_type == 'meeting' %}selected{% endif %}>Reuniones</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+                    <option value="">Todos</option>
+                    <option value="scheduled" {% if status == 'scheduled' %}selected{% endif %}>Programado</option>
+                    <option value="completed" {% if status == 'completed' %}selected{% endif %}>Completado</option>
+                    <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
+                <input type="text" name="q" value="{{ query }}" placeholder="Buscar..." 
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition">
+                    Filtrar
+                </button>
+                <a href="{% url 'interactions_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md font-medium transition">
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Interactions List -->
+    <div class="space-y-4">
+        {% for interaction in interactions %}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition">
+            <div class="p-5">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            {% if interaction.interaction_type == 'call' %}
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">CALL</span>
+                            {% else %}
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium">MTG</span>
+                            {% endif %}
+                            
+                            {% if interaction.status == 'completed' %}
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">Completado</span>
+                            {% elif interaction.status == 'scheduled' %}
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs">Programado</span>
+                            {% else %}
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs">Cancelado</span>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ interaction.subject }}</h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ interaction.description }}</p>
+                        
+                        <div class="flex gap-4 text-sm text-gray-500">
+                            <span>
+                                <span class="font-medium">Empresa:</span>
+                                <a href="{% url 'account_detail' interaction.account.id %}" class="text-secondary hover:underline">
+                                    {{ interaction.account.name }}
+                                </a>
+                            </span>
+                            <span>
+                                <span class="font-medium">Contacto:</span>
+                                <a href="{% url 'contact_detail' interaction.contact.id %}" class="text-secondary hover:underline">
+                                    {{ interaction.contact.first_name }} {{ interaction.contact.last_name }}
+                                </a>
+                            </span>
+                            <span><span class="font-medium">Asignado:</span> {{ interaction.assigned_to.get_full_name }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-900">{{ interaction.scheduled_at|date:"d/m/Y" }}</p>
+                        <p class="text-sm text-gray-500">{{ interaction.scheduled_at|date:"H:i" }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ interaction.duration_minutes }} min</p>
+                        <a href="{% url 'interaction_detail' interaction.id %}" class="inline-block mt-2 text-primary hover:text-blue-900 text-sm font-medium">
+                            Ver detalle →
+                        </a>
+                    </div>
+                </div>
+                
+                {% if interaction.notes %}
+                <div class="mt-3 pt-3 border-t">
+                    <p class="text-sm text-gray-600 italic">{{ interaction.notes|truncatewords:30 }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white shadow-md rounded-lg p-12 text-center">
+            <p class="text-gray-500 text-lg">No se encontraron interacciones</p>
+            {% if query or interaction_type or status %}
+            <p class="text-gray-400 mt-2">Intenta modificando los filtros</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if interactions %}
+    <div class="mt-6 text-center text-sm text-gray-600">
+        Mostrando {{ interactions|length }} de {{ total_count }} interacción{{ total_count|pluralize:"es" }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

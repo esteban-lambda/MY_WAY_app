@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ contact.first_name }} {{ contact.last_name }} - MyWay CRM{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Breadcrumb -->
+    <nav class="mb-4 text-sm">
+        <a href="{% url 'contacts_list' %}" class="text-secondary hover:underline">Contactos</a>
+        <span class="text-gray-500 mx-2">/</span>
+        <span class="text-gray-700">{{ contact.first_name }} {{contact.last_name }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {{ contact.first_name }} {{ contact.last_name }}
+                </h1>
+                <p class="text-lg text-gray-600 mb-2">{{ contact.job_title }}</p>
+                <p class="text-secondary font-medium">
+                    <a href="{% url 'account_detail' contact.account.id %}" class="hover:underline">
+                        {{ contact.account.name }}
+                    </a>
+                </p>
+            </div>
+            <a href="/admin/contacts/contact/{{ contact.id }}/change/" class="bg-secondary hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                Editar
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t">
+            {% if contact.email %}
+            <div>
+                <span class="text-gray-500 text-sm">Email:</span>
+                <a href="mailto:{{ contact.email }}" class="block text-secondary hover:underline">
+                    {{ contact.email }}
+                </a>
+            </div>
+            {% endif %}
+            {% if contact.phone %}
+            <div>
+                <span class="text-gray-500 text-sm">Teléfono:</span>
+                <p class="text-gray-900">{{ contact.phone }}</p>
+            </div>
+            {% endif %}
+            <div>
+                <span class="text-gray-500 text-sm">Creado:</span>
+                <p class="text-gray-900">{{ contact.created_at|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Total Deals</p>
+            <p class="text-2xl font-bold text-secondary">{{ total_deals }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Deals Ganados</p>
+            <p class="text-2xl font-bold text-green-600">{{ won_deals }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <p class="text-gray-500 text-sm">Valor Total</p>
+            <p class="text-2xl font-bold text-green-600">${{ total_value|floatformat:0 }}</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+                <button onclick="showTab('deals')" id="tab-deals" class="tab-button border-b-2 border-primary text-primary py-4 px-6 font-medium">
+                    Deals ({{ total_deals }})
+                </button>
+                <button onclick="showTab('interactions')" id="tab-interactions" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-4 px-6 font-medium">
+                    Interacciones ({{ interactions.count }})
+                </button>
+            </nav>
+        </div>
+
+        <!-- Deals Tab -->
+        <div id="content-deals" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Oportunidades</h3>
+                <a href="/admin/deals/deal/add/?contact={{ contact.id }}" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-900 transition">
+                    + Nuevo Deal
+                </a>
+            </div>
+            {% if deals %}
+            <div class="space-y-3">
+                {% for deal in deals %}
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900">{{ deal.name }}</h4>
+                            <p class="text-sm text-gray-600 mt-1">{{ deal.account.name }}</p>
+                            <div class="mt-2 flex gap-3 text-sm">
+                                {% if deal.stage == 'prospecting' %}
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Prospección</span>
+                                {% elif deal.stage == 'negotiation' %}
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Negociación</span>
+                                {% elif deal.stage == 'closed_won' %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Ganado</span>
+                                {% elif deal.stage == 'closed_lost' %}
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded">Perdido</span>
+                                {% endif %}
+                                <span class="text-gray-500">Cierre: {{ deal.expected_close_date|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-green-600">${{ deal.value|floatformat:0 }}</p>
+                            <p class="text-xs text-gray-500">{{ deal.assigned_to.get_full_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No hay deals registrados</p>
+            {% endif %}
+        </div>
+
+        <!-- Interactions Tab -->
+        <div id="content-interactions" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Historial de Interacciones</h3>
+            </div>
+            {% if interactions %}
+            <div class="space-y-3">
+                {% for interaction in interactions %}
+                <div class="border-l-4 {% if interaction.interaction_type == 'call' %}border-blue-500{% else %}border-purple-500{% endif %} bg-white p-4 shadow rounded">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                {% if interaction.interaction_type == 'call' %}
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">CALL</span>
+                                {% else %}
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">MTG</span>
+                                {% endif %}
+                                {% if interaction.status == 'completed' %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Completado</span>
+                                {% else %}
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Programado</span>
+                                {% endif %}
+                            </div>
+                            <h4 class="font-semibold text-gray-900">{{ interaction.subject }}</h4>
+                            <p class="text-sm text-gray-600 mt-1">{{ interaction.description }}</p>
+                            {% if interaction.notes %}
+                            <p class="text-sm text-gray-500 mt-2 italic">{{ interaction.notes }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="text-right text-sm text-gray-500">
+                            <p>{{ interaction.scheduled_at|date:"d/m/Y H:i" }}</p>
+                            <p>{{ interaction.duration_minutes }} min</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No hay interacciones registradas</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-button').forEach(el => {
+            el.classList.remove('border-primary', 'text-primary');
+            el.classList.add('border-transparent', 'text-gray-500');
+        });
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        const btn = document.getElementById('tab-' + tabName);
+        btn.classList.remove('border-transparent', 'text-gray-500');
+        btn.classList.add('border-primary', 'text-primary');
+    }
+</script>
+{% endblock %}

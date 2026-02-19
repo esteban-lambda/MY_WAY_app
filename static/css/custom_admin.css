@@ -1,28 +1,28 @@
 /* ================================================
    My Way CRM - Estilos Personalizados
-   Paleta de colores:
-   - #1A3263 (Azul oscuro) - Primary
-   - #547792 (Azul grisáceo) - Secondary  
-   - #FAB95B (Amarillo/dorado) - Accent
-   - #E8E2DB (Beige claro) - Background
+   Paleta de colores sobria y profesional:
+   - #1e293b (Slate 800) - Primary
+   - #64748b (Slate 500) - Secondary  
+   - #0ea5e9 (Sky 500) - Accent
+   - #f1f5f9 (Slate 50) - Background
    ================================================ */
 
 :root {
-    --color-primary: #1A3263;
-    --color-primary-light: #2a4273;
-    --color-primary-dark: #0a1f43;
+    --color-primary: #1e293b;
+    --color-primary-light: #334155;
+    --color-primary-dark: #0f172a;
     
-    --color-secondary: #547792;
-    --color-secondary-light: #6487a2;
-    --color-secondary-dark: #446782;
+    --color-secondary: #64748b;
+    --color-secondary-light: #94a3b8;
+    --color-secondary-dark: #475569;
     
-    --color-accent: #FAB95B;
-    --color-accent-light: #fbc47b;
-    --color-accent-dark: #f8a93b;
+    --color-accent: #0ea5e9;
+    --color-accent-light: #38bdf8;
+    --color-accent-dark: #0284c7;
     
-    --color-background: #E8E2DB;
-    --color-background-light: #f5f1eb;
-    --color-background-dark: #d8d2cb;
+    --color-background: #f1f5f9;
+    --color-background-light: #f8fafc;
+    --color-background-dark: #e2e8f0;
 }
 
 /* ===== Personalizaciones de Unfold Admin ===== */

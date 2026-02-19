@@ -1,9 +1,18 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, F, DecimalField, Case, When
 from django.db.models.functions import Coalesce
 from deals.models import Deal
 
 def dashboard_index(request):
+    """Dashboard principal - muestra landing si no está autenticado"""
+    if not request.user.is_authenticated:
+        return render(request, 'core/landing.html')
+    
+    return dashboard_view(request)
+
+@login_required
+def dashboard_view(request):
     """Dashboard principal con estadísticas y forecasting"""
     
     # Deals activos (no cerrados perdidos)

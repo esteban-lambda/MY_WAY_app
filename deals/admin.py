@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from simple_history.admin import SimpleHistoryAdmin
 from core.rbac_mixins import RBACModelAdminMixin, RestrictExportMixin
-from .models import Deal, Product, DealProduct
+from .models import Deal, Product, DealProduct, Quote, QuoteItem
 
 
 class DealProductInline(admin.TabularInline):
@@ -75,8 +75,8 @@ class DealAdmin(RBACModelAdminMixin, RestrictExportMixin, ModelAdmin, SimpleHist
         next_date = Interaction.calculate_next_contact_date(deal=obj)
         if next_date:
             return format_html(
-                '<div style=\"background: linear-gradient(135deg, #FAB95B 0%, #f8a93b 100%); '
-                'color: #1A3263; padding: 15px; border-radius: 8px; text-align: center; '
+                '<div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); '
+                'color: white; padding: 15px; border-radius: 8px; text-align: center; '
                 'font-weight: bold; font-size: 16px;\">'
                 'Próximo Contacto Sugerido: {}</div>',
                 next_date.strftime('%d de %B, %Y')
@@ -143,7 +143,7 @@ class DealAdmin(RBACModelAdminMixin, RestrictExportMixin, ModelAdmin, SimpleHist
         # Color según la etapa
         stage_colors = {
             'prospecting': '#999999',
-            'negotiation': '#547792',
+            'negotiation': '#64748b',
             'closed_won': '#2ecc71',
             'closed_lost': '#e74c3c',
         }
@@ -189,3 +189,92 @@ class DealProductAdmin(ModelAdmin):
     def get_total(self, obj):
         return f"${obj.get_total():,.2f}"
     get_total.short_description = 'Total'
+
+
+class QuoteItemInline(TabularInline):
+    model = QuoteItem
+    extra = 1
+    fields = ('product', 'description', 'quantity', 'unit_price', 'discount_percent', 'line_total', 'order')
+    readonly_fields = ('line_total',)
+    autocomplete_fields = ['product']
+
+
+@admin.register(Quote)
+class QuoteAdmin(RBACModelAdminMixin, RestrictExportMixin, ModelAdmin):
+    list_display = (
+        'quote_number',
+        'status_badge',
+        'account',
+        'contact',
+        'total_display',
+        'issue_date',
+        'valid_until',
+        'expired_badge'
+    )
+    list_filter = ('status', 'issue_date', 'valid_until')
+    search_fields = ('quote_number', 'title', 'account__name', 'contact__first_name', 'contact__last_name')
+    date_hierarchy = 'issue_date'
+    list_select_related = ('account', 'contact', 'deal', 'created_by')
+    inlines = [QuoteItemInline]
+    autocomplete_fields = ['deal', 'account', 'contact']
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('quote_number', 'title', 'description', 'status')
+        }),
+        ('Relaciones', {
+            'fields': ('deal', 'account', 'contact', 'created_by')
+        }),
+        ('Términos Comerciales', {
+            'fields': ('payment_terms', 'delivery_terms', 'notes')
+        }),
+        ('Totales', {
+            'fields': ('subtotal', 'tax_rate', 'tax_amount', 'discount_percent', 'discount_amount', 'total')
+        }),
+        ('Fechas', {
+            'fields': ('issue_date', 'valid_until', 'sent_at', 'viewed_at', 'accepted_at')
+        }),
+    )
+    readonly_fields = ('subtotal', 'tax_amount', 'discount_amount', 'total', 'sent_at', 'viewed_at', 'accepted_at')
+    
+    def status_badge(self, obj):
+        colors = {
+            'draft': '#64748b',
+            'sent': '#0ea5e9',
+            'viewed': '#8b5cf6',
+            'accepted': '#10b981',
+            'rejected': '#ef4444',
+            'expired': '#6b7280',
+        }
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; '
+            'border-radius: 10px; font-size: 11px; font-weight: 600;\">{}</span>',
+            colors.get(obj.status, '#64748b'),
+            obj.get_status_display().upper()
+        )
+    status_badge.short_description = 'Estado'
+    
+    def total_display(self, obj):
+        return format_html('<strong>${:,.2f}</strong>', obj.total)
+    total_display.short_description = 'Total'
+    
+    def expired_badge(self, obj):
+        if obj.is_expired():
+            return format_html(
+                '<span style="background-color: #ef4444; color: white; padding: 3px 8px; '
+                'border-radius: 10px; font-size: 11px; font-weight: 600;">⚠️ EXPIRADA</span>'
+            )
+        return '-'
+    expired_badge.short_description = 'Estado'
+
+
+@admin.register(QuoteItem)
+class QuoteItemAdmin(ModelAdmin):
+    list_display = ('quote', 'description', 'quantity', 'unit_price', 'discount_percent', 'line_total_display')
+    list_filter = ('quote__status',)
+    search_fields = ('description', 'quote__quote_number', 'product__name')
+    autocomplete_fields = ['quote', 'product']
+    
+    def line_total_display(self, obj):
+        return f"${obj.line_total:,.2f}"
+    line_total_display.short_description = 'Total Línea'
